@@ -54,10 +54,9 @@ export default function Home() {
       const synthesis = data.synthesis ?? {}
       const distribution = data.distribution ?? {}
       const coaching = synthesis.coaching ?? {}
-      const total = distribution.totalInvestors ?? 1000
-      const invest = distribution.invest ?? 0
-      const pass = distribution.pass ?? 0
-      const maybe = distribution.maybe ?? 0
+      const totalInvest = distribution.totalInvest ?? 0
+      const totalPass = distribution.totalPass ?? 0
+      const total = totalInvest + totalPass || 1000
 
       savePitch(user.uid, {
         product: cfg.product,
@@ -66,9 +65,8 @@ export default function Home() {
         poachRating: synthesis.poachRating ?? 0,
         capitalCommitted: distribution.capitalCommitted ?? 0,
         verdictSplit: {
-          invest: Math.round((invest / total) * 100),
-          pass: Math.round((pass / total) * 100),
-          maybe: Math.round((maybe / total) * 100),
+          invest: Math.round((totalInvest / total) * 100),
+          pass: Math.round((totalPass / total) * 100),
         },
         coaching: {
           landed: coaching.landed ?? '',
@@ -118,7 +116,7 @@ export default function Home() {
   }
 
   if (screen === 'results') {
-    return <ResultsScreen results={results} transcript={transcript} onPitchAgain={handleRestart} />
+    return <ResultsScreen results={results} transcript={transcript} product={config?.product ?? ''} onPitchAgain={handleRestart} />
   }
 
   return (

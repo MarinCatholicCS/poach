@@ -4,7 +4,6 @@ import type { Reaction } from './simulateReactions'
 export interface ExtrapolationResult {
   totalInvest: number
   totalPass: number
-  totalMaybe: number
   capitalCommitted: number
   investorTypeBreakdown: {
     techVCs: number
@@ -24,7 +23,6 @@ const CROWD_WEIGHT: Record<string, number> = {
   series_a_plus: 0.25,
 }
 
-// Per-individual interest signal in a simulated crowd (not a lead check)
 const CHECK_AMOUNT: Record<string, number> = {
   angel: 2_500,
   seed: 5_000,
@@ -45,7 +43,6 @@ export function extrapolate(archetypes: Archetype[], reactions: Reaction[]): Ext
 
   let totalInvest = 0
   let totalPass = 0
-  let totalMaybe = 0
   let capitalCommitted = 0
   let techVCs = 0
   let consumerVCs = 0
@@ -59,7 +56,6 @@ export function extrapolate(archetypes: Archetype[], reactions: Reaction[]): Ext
     const totalSkepticism = groupPairs.reduce((s, p) => s + p.archetype.skepticismLevel, 0)
 
     for (const { archetype, reaction } of groupPairs) {
-      // Higher skepticism = more common in real world = higher crowd weight
       const weight = archetype.skepticismLevel / totalSkepticism
       const crowdCount = Math.round(crowdSlice * weight)
 
@@ -79,34 +75,13 @@ export function extrapolate(archetypes: Archetype[], reactions: Reaction[]): Ext
         } else {
           techVCs += crowdCount
         }
-      } else if (reaction.verdict === 'maybe') {
-        // ~10% of maybes eventually convert (soft interest, not conviction)
-        const convertedMaybe = Math.round(crowdCount * 0.1)
-        totalInvest += convertedMaybe
-        totalMaybe += crowdCount - convertedMaybe
-        capitalCommitted += convertedMaybe * CHECK_AMOUNT[checkSize]
-
-        // Count converted maybes in the type breakdown too
-        const focusStr = archetype.focusAreas.join(' ').toLowerCase()
-        const geoStr = archetype.geography.toLowerCase()
-        if (INTL_GEOS.some(g => geoStr.includes(g))) {
-          international += convertedMaybe
-        } else if (checkSize === 'angel') {
-          angels += convertedMaybe
-        } else if (CONSUMER_KEYWORDS.some(k => focusStr.includes(k))) {
-          consumerVCs += convertedMaybe
-        } else {
-          techVCs += convertedMaybe
-        }
       } else {
         totalPass += crowdCount
       }
     }
   }
 
-  // Scale capital by invest rate so terrible pitches don't show meaningful capital.
-  // Uses a gentler curve: penalises heavily below 5%, tapers above that.
-  // Examples: 1.5% → ×0.30, 3% → ×0.42, 10% → ×0.68, 30% → ×0.86, 60% → ×0.95
+  // Penalise low invest rates — same curve as before
   const investRate = totalInvest / CROWD_SIZE
   const sentimentMultiplier = Math.pow(investRate, 0.37)
   capitalCommitted = Math.round(capitalCommitted * sentimentMultiplier)
@@ -123,7 +98,6 @@ export function extrapolate(archetypes: Archetype[], reactions: Reaction[]): Ext
   return {
     totalInvest,
     totalPass,
-    totalMaybe,
     capitalCommitted,
     investorTypeBreakdown: { techVCs, consumerVCs, angels, international },
     topObjections,

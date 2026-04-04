@@ -34,7 +34,7 @@ async function main() {
   console.log('\n=== PIPELINE COMPLETE ===')
   console.log(`POACH Rating: ${synthesis.poachRating}/10`)
   console.log(`Capital Committed: $${distribution.capitalCommitted.toLocaleString()}`)
-  console.log(`Invest: ${distribution.totalInvest} | Maybe: ${distribution.totalMaybe} | Pass: ${distribution.totalPass}`)
+  console.log(`Invest: ${distribution.totalInvest} | Pass: ${distribution.totalPass}`)
 }
 
 main().catch(err => {

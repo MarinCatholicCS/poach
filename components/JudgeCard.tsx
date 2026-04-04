@@ -12,7 +12,7 @@ interface VIPPersona {
 
 interface Props {
   persona: VIPPersona
-  verdict: 'invest' | 'pass' | 'maybe'
+  verdict: 'invest' | 'pass'
   amount: number
   quote: string
   topObjection: string
@@ -23,13 +23,11 @@ interface Props {
 const VERDICT_STYLES = {
   invest: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
   pass: 'bg-red-50 text-red-700 border border-red-200',
-  maybe: 'bg-amber-50 text-amber-700 border border-amber-200',
 }
 
 const VERDICT_LABEL = {
   invest: 'Invest',
   pass: 'Pass',
-  maybe: 'Maybe',
 }
 
 function formatAmount(n: number): string {

@@ -10,7 +10,7 @@ function parseJSON<T>(text: string): T {
 
 export interface Reaction {
   archetypeId: number
-  verdict: 'invest' | 'pass' | 'maybe'
+  verdict: 'invest' | 'pass'
   amount: number
   quote: string
   top_objection: string
@@ -45,7 +45,7 @@ async function simulateOne(archetype: Archetype, pitch: string): Promise<Reactio
           content: `PITCH: ${pitch}
 
 Respond ONLY in JSON (no preamble, no markdown backticks):
-{"verdict":"invest|pass|maybe","amount":0,"quote":"your honest 1-sentence reaction as yourself","top_objection":"your main concern","excitement_score":5,"question":"one sharp follow-up question you would ask the founder (under 12 words)"}`
+{"verdict":"invest|pass","amount":0,"quote":"your honest 1-sentence reaction as yourself","top_objection":"your main concern","excitement_score":5,"question":"one sharp follow-up question you would ask the founder (under 12 words)"}`
         }
       ]
     })

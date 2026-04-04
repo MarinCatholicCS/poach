@@ -42,7 +42,7 @@ export interface PitchData {
   duration: 30 | 60
   poachRating: number
   capitalCommitted: number
-  verdictSplit: { invest: number; pass: number; maybe: number }
+  verdictSplit: { invest: number; pass: number }
   coaching: { landed: string; cut: string; reframe: string }
 }
 

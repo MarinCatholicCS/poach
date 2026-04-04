@@ -13,7 +13,7 @@ type VIPPersona = PersonaJSON
 
 interface VIPReaction {
   persona: VIPPersona
-  verdict: 'invest' | 'pass' | 'maybe'
+  verdict: 'invest' | 'pass'
   amount: number
   quote: string
   top_objection: string
@@ -27,7 +27,7 @@ const client = new Anthropic()
 async function simulateVIPReaction(persona: VIPPersona, transcript: string): Promise<VIPReaction> {
   const fallback: VIPReaction = {
     persona,
-    verdict: 'maybe',
+    verdict: 'pass',
     amount: 0,
     quote: 'Interesting concept, needs more validation.',
     top_objection: 'Need more data.',
@@ -47,7 +47,7 @@ async function simulateVIPReaction(persona: VIPPersona, transcript: string): Pro
           content: `PITCH: ${transcript}
 
 Respond ONLY in JSON (no preamble, no markdown backticks):
-{"verdict":"invest|pass|maybe","amount":0,"quote":"your honest 1-sentence gut reaction as yourself","top_objection":"your single biggest concern","liked":"1 sentence on what specifically resonated with your thesis","questions":["concise question (under 10 words) that can be answered in 30 seconds","second concise question (under 10 words)"],"excitement_score":5}`,
+{"verdict":"invest|pass","amount":0,"quote":"your honest 1-sentence gut reaction as yourself","top_objection":"your single biggest concern","liked":"1 sentence on what specifically resonated with your thesis","questions":["concise question (under 10 words) that can be answered in 30 seconds","second concise question (under 10 words)"],"excitement_score":5}`,
         },
       ],
     })
