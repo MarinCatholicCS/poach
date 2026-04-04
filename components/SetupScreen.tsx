@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { User } from 'firebase/auth'
+import { signInWithGoogle, signOut } from '@/lib/firebase'
 import { RANDOM_PRODUCTS } from '@/lib/products'
 
 interface SetupConfig {
@@ -13,9 +15,11 @@ interface Props {
   onStart: (config: SetupConfig) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onDevLoad?: (results: Record<string, any>) => void
+  user?: User | null
+  onHistory?: () => void
 }
 
-export default function SetupScreen({ onStart, onDevLoad }: Props) {
+export default function SetupScreen({ onStart, onDevLoad, user, onHistory }: Props) {
   const [productMode, setProductMode] = useState<'own' | 'random'>('own')
   const [ownProduct, setOwnProduct] = useState('')
   const [randomProduct, setRandomProduct] = useState('')
@@ -62,6 +66,41 @@ export default function SetupScreen({ onStart, onDevLoad }: Props) {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 py-12">
+      {/* Top-right auth */}
+      <div className="fixed top-4 right-4 flex items-center gap-3">
+        {user ? (
+          <>
+            <button
+              onClick={onHistory}
+              className="text-xs text-gray-400 hover:text-white transition-colors border border-gray-700 hover:border-gray-500 px-3 py-1.5 rounded-lg"
+            >
+              History
+            </button>
+            {user.photoURL && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.photoURL}
+                alt={user.displayName ?? 'avatar'}
+                className="w-8 h-8 rounded-full border border-gray-700"
+              />
+            )}
+            <button
+              onClick={() => signOut()}
+              className="text-xs text-gray-500 hover:text-white transition-colors"
+            >
+              Sign out
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => signInWithGoogle()}
+            className="text-xs border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition-all"
+          >
+            Sign in with Google
+          </button>
+        )}
+      </div>
+
       {/* Header */}
       <div className="mb-12 text-center">
         <h1 className="text-7xl font-black tracking-tighter">POACH</h1>
