@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { WeaveSpinner } from '@/components/ui/weave-spinner'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ResultsJSON = Record<string, any>
@@ -156,7 +157,7 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
 
   // ── Loading state ─────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-14 px-6">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-10 px-6">
       {/* Hero */}
       <div className="text-center space-y-3">
         <h1 className="text-5xl sm:text-6xl font-black tracking-tight leading-none bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent">
@@ -170,6 +171,9 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
           AI agents running in parallel
         </p>
       </div>
+
+      {/* Weave spinner */}
+      {!allDone && <WeaveSpinner />}
 
       {/* Step list */}
       <div className="flex flex-col gap-4 w-full max-w-xs">
