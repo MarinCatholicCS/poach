@@ -24,11 +24,11 @@ const CROWD_WEIGHT: Record<string, number> = {
   series_a_plus: 0.25,
 }
 
-// Per-individual check size in a crowded simulated room (not lead investment)
+// Per-individual interest signal in a simulated crowd (not a lead check)
 const CHECK_AMOUNT: Record<string, number> = {
-  angel: 5_000,
-  seed: 25_000,
-  series_a_plus: 100_000,
+  angel: 2_500,
+  seed: 5_000,
+  series_a_plus: 30_000,
 }
 
 const CONSUMER_KEYWORDS = ['consumer', 'marketplace', 'retail', 'fashion', 'food', 'health', 'social', 'd2c', 'creator', 'gaming']
@@ -80,16 +80,36 @@ export function extrapolate(archetypes: Archetype[], reactions: Reaction[]): Ext
           techVCs += crowdCount
         }
       } else if (reaction.verdict === 'maybe') {
-        // ~30% of maybes eventually convert
-        const convertedMaybe = Math.round(crowdCount * 0.3)
+        // ~10% of maybes eventually convert (soft interest, not conviction)
+        const convertedMaybe = Math.round(crowdCount * 0.1)
         totalInvest += convertedMaybe
         totalMaybe += crowdCount - convertedMaybe
         capitalCommitted += convertedMaybe * CHECK_AMOUNT[checkSize]
+
+        // Count converted maybes in the type breakdown too
+        const focusStr = archetype.focusAreas.join(' ').toLowerCase()
+        const geoStr = archetype.geography.toLowerCase()
+        if (INTL_GEOS.some(g => geoStr.includes(g))) {
+          international += convertedMaybe
+        } else if (checkSize === 'angel') {
+          angels += convertedMaybe
+        } else if (CONSUMER_KEYWORDS.some(k => focusStr.includes(k))) {
+          consumerVCs += convertedMaybe
+        } else {
+          techVCs += convertedMaybe
+        }
       } else {
         totalPass += crowdCount
       }
     }
   }
+
+  // Scale capital by invest rate so terrible pitches don't show meaningful capital.
+  // Uses a gentler curve: penalises heavily below 5%, tapers above that.
+  // Examples: 1.5% → ×0.30, 3% → ×0.42, 10% → ×0.68, 30% → ×0.86, 60% → ×0.95
+  const investRate = totalInvest / CROWD_SIZE
+  const sentimentMultiplier = Math.pow(investRate, 0.37)
+  capitalCommitted = Math.round(capitalCommitted * sentimentMultiplier)
 
   const topObjections = reactions
     .filter(r => r.top_objection)
