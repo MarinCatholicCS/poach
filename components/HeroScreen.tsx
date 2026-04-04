@@ -1,6 +1,8 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { User } from 'firebase/auth'
+import { signInWithGoogle, signOut } from '@/lib/firebase'
 import TextCursorProximity from '@/components/ui/text-cursor-proximity'
 import { RANDOM_PRODUCTS } from '@/lib/products'
 
@@ -12,13 +14,17 @@ interface SetupConfig {
 
 interface Props {
   onStart: (config: SetupConfig) => void
+  user?: User | null
+  onHistory?: () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onDevLoad?: (results: Record<string, any>) => void
 }
 
 const ASCII = ['\u270E', '\u2710', '\u2711', '\u2711']
 
 type Step = 'duration' | 'product' | 'vip'
 
-export default function HeroScreen({ onStart }: Props) {
+export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Props) {
   const containerRef = useRef<HTMLDivElement>(null!)
 
   // Shared setup state — same shape as SetupScreen
@@ -31,6 +37,21 @@ export default function HeroScreen({ onStart }: Props) {
 
   const [step, setStep] = useState<Step>('duration')
   const [fading, setFading] = useState(false)
+
+  const [devOpen, setDevOpen] = useState(false)
+  const [devJson, setDevJson] = useState('')
+  const [devError, setDevError] = useState('')
+
+  const handleDevLoad = () => {
+    try {
+      const parsed = JSON.parse(devJson.trim())
+      setDevError('')
+      setDevOpen(false)
+      onDevLoad?.(parsed)
+    } catch {
+      setDevError('Invalid JSON')
+    }
+  }
 
   const product = productMode === 'random' ? randomProduct : ownProduct.trim()
 
@@ -79,6 +100,41 @@ export default function HeroScreen({ onStart }: Props) {
       className="h-screen bg-white flex flex-col cursor-default select-none"
       style={{ padding: '100px 100px' }}
     >
+      {/* Auth bar */}
+      <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
+        {user ? (
+          <>
+            <button
+              onClick={onHistory}
+              className="text-xs text-gray-500 hover:text-gray-800 transition-colors border border-gray-200 hover:border-gray-400 px-3 py-1.5 rounded-lg"
+            >
+              History
+            </button>
+            {user.photoURL && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.photoURL}
+                alt={user.displayName ?? 'avatar'}
+                className="w-8 h-8 rounded-full border border-gray-300"
+              />
+            )}
+            <button
+              onClick={() => signOut()}
+              className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+            >
+              Sign out
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => signInWithGoogle()}
+            className="text-xs border border-gray-300 hover:border-gray-500 text-gray-500 hover:text-gray-800 px-3 py-1.5 rounded-lg transition-all"
+          >
+            Sign in
+          </button>
+        )}
+      </div>
+
       {/* Top row */}
       <div className="flex w-full gap-4" style={{ flex: '1 1 auto', minHeight: 0 }}>
         {/* Left orange board — 65% */}
@@ -289,6 +345,38 @@ export default function HeroScreen({ onStart }: Props) {
       >
         <p className="text-white font-black uppercase tracking-tight leading-none whitespace-nowrap" style={{ fontSize: '4.5vw' }}>Your personal startup coach</p>
       </div>
+
+      {/* Dev JSON loader — fixed bottom-left */}
+      {onDevLoad && (
+        <div className="fixed bottom-4 left-4 z-50">
+          {devOpen && (
+            <div className="mb-2 bg-white border border-gray-200 rounded-xl shadow-lg p-4 w-80 space-y-2">
+              <textarea
+                value={devJson}
+                onChange={e => { setDevJson(e.target.value); setDevError('') }}
+                placeholder="Paste simulate API response JSON here..."
+                rows={6}
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:border-orange-400 text-xs font-mono"
+              />
+              {devError && <p className="text-red-500 text-xs">{devError}</p>}
+              <button
+                onClick={handleDevLoad}
+                disabled={!devJson.trim()}
+                className="w-full py-2 text-white text-xs rounded-lg font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
+                style={{ backgroundColor: '#FF8C00' }}
+              >
+                Load Results →
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => setDevOpen(v => !v)}
+            className="text-xs bg-white border border-gray-200 hover:border-gray-400 text-gray-400 hover:text-gray-700 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+          >
+            {devOpen ? '✕ Close' : 'Dev'}
+          </button>
+        </div>
+      )}
 
       <style>{`
         @keyframes fadeIn {

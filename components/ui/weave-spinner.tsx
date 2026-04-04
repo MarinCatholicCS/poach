@@ -27,12 +27,12 @@ export const WeaveSpinner = () => {
             left: 50%;
             width: 12px;
             height: 12px;
-            background: #ffaa00; /* Bright amber glow */
+            background: #FF8C00;
             border-radius: 50%;
             transform: translate(-50%, -50%);
             box-shadow:
-              0 0 20px #ffaa00,
-              0 0 40px rgba(255, 170, 0, 0.6);
+              0 0 20px rgba(255, 140, 0, 0.6),
+              0 0 40px rgba(255, 140, 0, 0.3);
             animation: nodePulse 1.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
           }
 
@@ -42,10 +42,10 @@ export const WeaveSpinner = () => {
             background: linear-gradient(
               90deg,
               transparent,
-              rgba(255, 170, 0, 0.8),
+              rgba(255, 140, 0, 0.7),
               transparent
             );
-            box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
             transform-origin: center;
           }
 
@@ -88,14 +88,14 @@ export const WeaveSpinner = () => {
             100% {
               transform: translate(-50%, -50%) scale(1);
               box-shadow:
-                0 0 20px #ffaa00,
-                0 0 40px rgba(255, 170, 0, 0.6);
+                0 0 20px rgba(255, 140, 0, 0.6),
+                0 0 40px rgba(255, 140, 0, 0.3);
             }
             50% {
               transform: translate(-50%, -50%) scale(1.4);
               box-shadow:
-                0 0 30px #ffaa00,
-                0 0 60px rgba(255, 170, 0, 0.8);
+                0 0 30px rgba(255, 140, 0, 0.8),
+                0 0 60px rgba(255, 140, 0, 0.4);
             }
           }
 

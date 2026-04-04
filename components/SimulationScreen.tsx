@@ -14,18 +14,18 @@ interface Props {
 
 function Spinner() {
   return (
-    <span className="inline-block w-4 h-4 rounded-full border-2 border-zinc-600 border-t-white animate-spin flex-shrink-0" />
+    <span className="inline-block w-4 h-4 rounded-full border-2 border-orange-200 border-t-orange-500 animate-spin flex-shrink-0" />
   )
 }
 
 function Check() {
   return (
     <svg
-      className="w-4 h-4 text-emerald-400 flex-shrink-0"
+      className="w-4 h-4 flex-shrink-0"
       viewBox="0 0 16 16"
       fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
+      stroke="#FF8C00"
+      strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -64,14 +64,13 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
         setInvestorCount(999)
         return
       }
-      // Linear with slight ease-in so it visibly ticks up steadily
       setInvestorCount(Math.floor(999 * Math.pow(t, 1.1)))
       rafId = requestAnimationFrame(tick)
     }
 
     rafId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafId)
-  }, [retryCount]) // restart counter on retry
+  }, [retryCount])
 
   useEffect(() => {
     if (allDone) setInvestorCount(1000)
@@ -133,20 +132,21 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
   // ── Error state ──────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-6 px-6 text-center">
-        <p className="text-red-400 text-lg font-semibold">Simulation failed</p>
-        <p className="text-zinc-500 text-sm max-w-sm">{error}</p>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-6 px-6 text-center">
+        <p className="text-gray-900 text-lg font-semibold">Simulation failed</p>
+        <p className="text-gray-500 text-sm max-w-sm">{error}</p>
         {retryCount < MAX_RETRIES ? (
           <button
             onClick={handleRetry}
-            className="px-6 py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-zinc-100 transition-colors"
+            className="px-6 py-3 text-white rounded-xl font-bold text-sm hover:opacity-90 transition-colors"
+            style={{ backgroundColor: '#FF8C00' }}
           >
             Try again ({MAX_RETRIES - retryCount} left)
           </button>
         ) : (
           <button
             onClick={() => onComplete({ error })}
-            className="px-6 py-3 bg-zinc-800 text-zinc-300 rounded-xl font-bold text-sm hover:bg-zinc-700 transition-colors"
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors"
           >
             See partial results
           </button>
@@ -157,17 +157,17 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
 
   // ── Loading state ─────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-10 px-6">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-10 px-6">
       {/* Hero */}
       <div className="text-center space-y-3">
-        <h1 className="text-5xl sm:text-6xl font-black tracking-tight leading-none bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent">
+        <h1 className="text-5xl sm:text-6xl font-black tracking-tight leading-none text-gray-900">
           Polling 1,000 investors
         </h1>
-        <p className="text-zinc-400 text-lg font-semibold tabular-nums">
+        <p className="text-gray-700 font-semibold tabular-nums text-lg">
           {investorCount.toLocaleString()}{' '}
-          <span className="text-zinc-600 font-normal text-sm">/ 1,000 surveyed</span>
+          <span className="text-gray-400 font-normal text-sm">/ 1,000 surveyed</span>
         </p>
-        <p className="text-zinc-600 tracking-wide uppercase text-xs">
+        <p className="text-gray-400 tracking-wide uppercase text-xs">
           AI agents running in parallel
         </p>
       </div>
@@ -186,30 +186,17 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
             <div className="w-5 flex items-center justify-center">
               {allDone ? <Check /> : <Spinner />}
             </div>
-            <span className={`text-sm transition-colors duration-500 ${allDone ? 'text-zinc-500' : 'text-zinc-100'}`}>
+            <span className={`text-sm transition-colors duration-500 ${allDone ? 'text-gray-400' : 'text-gray-700'}`}>
               {step.label}
             </span>
           </div>
         ))}
       </div>
 
-      {/* Ambient pulse */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(99,102,241,0.07) 0%, transparent 70%)',
-          animation: 'ambientPulse 3s ease-in-out infinite',
-        }}
-      />
-
       <style>{`
         @keyframes stepIn {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes ambientPulse {
-          0%, 100% { opacity: 0.5; }
-          50%       { opacity: 1; }
         }
       `}</style>
     </div>

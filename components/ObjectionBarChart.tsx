@@ -18,8 +18,8 @@ export default function ObjectionBarChart({ objectionClusters }: Props) {
   if (data.length === 0) return null
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wide mb-4">
+    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5">
+      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-4">
         Objection frequency
       </p>
       <ResponsiveContainer width="100%" height={data.length * 48 + 16}>
@@ -29,21 +29,21 @@ export default function ObjectionBarChart({ objectionClusters }: Props) {
             type="category"
             dataKey="theme"
             width={160}
-            tick={{ fill: '#d4d4d8', fontSize: 11 }}
+            tick={{ fill: '#4b5563', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
             contentStyle={{
-              background: '#18181b',
-              border: '1px solid #3f3f46',
+              background: '#fff7ed',
+              border: '1px solid #fed7aa',
               borderRadius: 8,
               fontSize: 12,
-              color: '#fff',
+              color: '#111',
             }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             formatter={(value: any) => [`${value} investors`]}
-            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+            cursor={{ fill: 'rgba(255,140,0,0.05)' }}
           />
           <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={20}>
             {data.map((_, i) => (

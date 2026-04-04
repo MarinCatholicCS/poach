@@ -63,8 +63,8 @@ export default function VerdictByTypeChart({ archetypes, reactions }: Props) {
   }))
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wide mb-4">
+    <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5">
+      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-4">
         Verdict by investor type
       </p>
       <ResponsiveContainer width="100%" height={220}>
@@ -74,32 +74,32 @@ export default function VerdictByTypeChart({ archetypes, reactions }: Props) {
             type="category"
             dataKey="name"
             width={100}
-            tick={{ fill: '#a1a1aa', fontSize: 12 }}
+            tick={{ fill: '#6b7280', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
             contentStyle={{
-              background: '#18181b',
-              border: '1px solid #3f3f46',
+              background: '#fff7ed',
+              border: '1px solid #fed7aa',
               borderRadius: 8,
               fontSize: 12,
-              color: '#fff',
+              color: '#111',
             }}
-            itemStyle={{ color: '#fff' }}
-            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+            itemStyle={{ color: '#111' }}
+            cursor={{ fill: 'rgba(255,140,0,0.05)' }}
           />
           <Legend
             iconType="circle"
             iconSize={8}
-            wrapperStyle={{ fontSize: 11, color: '#a1a1aa', paddingTop: 8 }}
+            wrapperStyle={{ fontSize: 11, color: '#6b7280', paddingTop: 8 }}
           />
           <Bar dataKey="invest" stackId="a" fill="#22c55e" radius={[0, 0, 0, 0]} name="Invest" />
           <Bar dataKey="maybe" stackId="a" fill="#f59e0b" name="Maybe" />
           <Bar dataKey="pass" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} name="Pass" />
         </BarChart>
       </ResponsiveContainer>
-      <p className="text-zinc-700 text-xs mt-2">Based on 15 sampled archetypes</p>
+      <p className="text-gray-400 text-xs mt-2">Based on 15 sampled archetypes</p>
     </div>
   )
 }
