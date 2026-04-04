@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { PieChart, Pie, Cell, Tooltip } from 'recharts'
 import InvestorTypeBreakdown from './InvestorTypeBreakdown'
+import VerdictByTypeChart from './VerdictByTypeChart'
+import ObjectionBarChart from './ObjectionBarChart'
 import CoachingPanel from './CoachingPanel'
 import JudgeCard from './JudgeCard'
 
@@ -267,6 +269,20 @@ export default function ResultsScreen({ results, onPitchAgain }: Props) {
           {archetypes.length > 0 && reactions.length > 0 && (
             <div className="mb-6">
               <InvestorTypeBreakdown archetypes={archetypes} reactions={reactions} />
+            </div>
+          )}
+
+          {/* Verdict by type stacked bar */}
+          {archetypes.length > 0 && reactions.length > 0 && (
+            <div className="mb-6">
+              <VerdictByTypeChart archetypes={archetypes} reactions={reactions} />
+            </div>
+          )}
+
+          {/* Objection frequency bar chart */}
+          {objectionClusters.length > 0 && (
+            <div className="mb-6">
+              <ObjectionBarChart objectionClusters={objectionClusters} />
             </div>
           )}
 
