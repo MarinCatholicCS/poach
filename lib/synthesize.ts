@@ -21,8 +21,8 @@ export interface SynthesisResult {
 
 export async function synthesize(distribution: ExtrapolationResult, pitch: string): Promise<SynthesisResult> {
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1000,
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 700,
     messages: [
       {
         role: 'user',
@@ -32,7 +32,7 @@ ORIGINAL PITCH:
 ${pitch}
 
 SIMULATION RESULTS:
-${JSON.stringify(distribution, null, 2)}
+${JSON.stringify(distribution)}
 
 Respond ONLY in JSON (no preamble, no markdown backticks):
 {"poachRating":7,"bestCrowdQuote":"string","objectionClusters":[{"theme":"string","count":3}],"coaching":{"landed":"what resonated most with investors","cut":"specific language or claims to remove","reframe":"concrete rewrite of the weakest sentence in the pitch"}}`

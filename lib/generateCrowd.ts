@@ -49,6 +49,21 @@ Respond ONLY in JSON (no preamble, no markdown backticks):
   })
 
   const text = (message.content[0] as { type: 'text'; text: string }).text
-  const parsed = parseJSON<{ archetypes: Archetype[] }>(text)
-  return parsed.archetypes
+  try {
+    const parsed = parseJSON<{ archetypes: Archetype[] }>(text)
+    if (!Array.isArray(parsed.archetypes) || parsed.archetypes.length === 0) throw new Error('empty')
+    return parsed.archetypes
+  } catch {
+    // Truncated or malformed JSON — return a minimal fallback crowd so the simulation can still run
+    return Array.from({ length: 15 }, (_, i) => ({
+      id: i + 1,
+      name: `Investor ${i + 1}`,
+      firm: i < 4 ? 'Tech VC' : i < 8 ? 'Consumer VC' : i < 12 ? 'Angel' : 'International VC',
+      style: (['data-driven', 'gut-feel', 'trend-chaser', 'contrarian', 'operator-minded'] as const)[i % 5],
+      checkSize: (i < 8 ? 'seed' : i < 12 ? 'angel' : 'series_a_plus') as Archetype['checkSize'],
+      skepticismLevel: 5 + (i % 5),
+      focusAreas: ['technology', 'SaaS'],
+      geography: ['SF', 'NYC', 'LA', 'Austin', 'Boston', 'Chicago', 'London', 'Berlin', 'Singapore'][i % 9],
+    }))
+  }
 }

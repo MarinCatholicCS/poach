@@ -3,20 +3,13 @@ import { generateCrowd } from '@/lib/generateCrowd'
 import { simulateReactions } from '@/lib/simulateReactions'
 import { extrapolate } from '@/lib/extrapolate'
 import { synthesize } from '@/lib/synthesize'
+import { researchVIPs } from '@/lib/researchVIPs'
 import type { Archetype } from '@/lib/generateCrowd'
 import type { Reaction } from '@/lib/simulateReactions'
+import type { PersonaJSON } from '@/lib/researchVIPs'
 import Anthropic from '@anthropic-ai/sdk'
 
-interface VIPPersona {
-  name: string
-  firm: string
-  thesis: string
-  portfolio: string[]
-  style: string
-  skepticismLevel: number
-  focusAreas: string[]
-  imageUrl?: string
-}
+type VIPPersona = PersonaJSON
 
 interface VIPReaction {
   persona: VIPPersona
@@ -71,16 +64,16 @@ Respond ONLY in JSON (no preamble, no markdown backticks):
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { transcript, vipPersonas } = body as {
+    const { transcript, vipInputs } = body as {
       transcript: string
-      vipPersonas?: VIPPersona[]
+      vipInputs?: string[]
     }
 
     if (!transcript?.trim()) {
       return Response.json({ error: 'transcript is required' }, { status: 400 })
     }
 
-    // Steps 2–3: generate crowd and (optionally) VIP reactions in parallel
+    // Crowd generation + VIP research run fully in parallel
     const crowdPromise: Promise<{ archetypes: Archetype[]; reactions: Reaction[] }> =
       generateCrowd(transcript).then(async (archetypes) => {
         const reactions = await simulateReactions(archetypes, transcript)
@@ -88,8 +81,10 @@ export async function POST(req: NextRequest) {
       })
 
     const vipPromise: Promise<VIPReaction[]> =
-      vipPersonas && vipPersonas.length > 0
-        ? Promise.all(vipPersonas.map((p) => simulateVIPReaction(p, transcript)))
+      vipInputs && vipInputs.length > 0
+        ? researchVIPs(vipInputs).then((personas) =>
+            Promise.all(personas.map((p) => simulateVIPReaction(p, transcript)))
+          )
         : Promise.resolve([])
 
     const [{ archetypes, reactions }, vipReactions] = await Promise.all([

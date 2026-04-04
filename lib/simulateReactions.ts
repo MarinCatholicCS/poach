@@ -37,7 +37,7 @@ async function simulateOne(archetype: Archetype, pitch: string): Promise<Reactio
   try {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
+      max_tokens: 400,
       system: `You are ${archetype.name}, a ${archetype.style} investor at ${archetype.firm} based in ${archetype.geography}. You focus on ${archetype.focusAreas.join(', ')}. Your skepticism level is ${archetype.skepticismLevel}/10. You write ${CHECK_RANGE[archetype.checkSize]} checks. Evaluate pitches through your unique lens and respond ONLY in JSON with no preamble and no markdown backticks.`,
       messages: [
         {

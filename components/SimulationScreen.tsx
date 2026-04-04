@@ -82,21 +82,10 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
 
     async function run() {
       try {
-        let vipPersonas: unknown[] = []
-
-        if (hasVIPs) {
-          const res = await fetch('/api/research', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inputs: vipInputs }),
-          })
-          if (res.ok) vipPersonas = await res.json()
-        }
-
         const res = await fetch('/api/simulate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transcript, vipPersonas }),
+          body: JSON.stringify({ transcript, vipInputs }),
         })
 
         if (!res.ok) {
