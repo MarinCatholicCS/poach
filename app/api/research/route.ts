@@ -9,6 +9,7 @@ export interface PersonaJSON {
   style: string
   skepticismLevel: number
   focusAreas: string[]
+  imageUrl?: string
 }
 
 const FALLBACK_PERSONAS: PersonaJSON[] = [
@@ -52,38 +53,64 @@ const FALLBACK_PERSONAS: PersonaJSON[] = [
 
 const client = new Anthropic()
 
+async function fetchWikipediaSummary(name: string): Promise<{ extract: string; imageUrl: string }> {
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(), 2500)
+  try {
+    const slug = name.trim().replace(/\s+/g, '_')
+    const res = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(slug)}`,
+      { signal: abort.signal }
+    )
+    if (!res.ok) return { extract: '', imageUrl: '' }
+    const data = await res.json() as { extract?: string; thumbnail?: { source?: string } }
+    return {
+      extract: data.extract ?? '',
+      imageUrl: data.thumbnail?.source ?? '',
+    }
+  } catch {
+    return { extract: '', imageUrl: '' }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 async function researchOne(input: string): Promise<PersonaJSON> {
   try {
+    const { extract: wikiExtract, imageUrl } = await fetchWikipediaSummary(input)
+    const wikiContext = wikiExtract
+      ? `Wikipedia article:\n\n${wikiExtract}\n\nBased on the above, extract`
+      : `Based on your knowledge, extract`
+
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 600,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [
         {
           role: 'user',
-          content: `Research this investor and extract their profile: "${input}"
+          content: `${wikiContext} the investor profile for "${input}".
 
-Find:
+Extract:
 - Their full name and current firm
 - Investment thesis (what they look for)
 - Notable portfolio companies (up to 5)
-- Investing style (tough/encouraging/data-driven/gut-feel/contrarian/operator-minded)
+- Investing style (data-driven/gut-feel/trend-chaser/contrarian/operator-minded)
 - Skepticism level 1-10 (10 = extremely hard to impress)
 - Key focus areas (2-3 topics)
 
-After searching, respond ONLY in JSON (no preamble, no markdown backticks):
+Respond ONLY in JSON (no preamble, no markdown backticks):
 {"name":"string","firm":"string","thesis":"string","portfolio":["string"],"style":"string","skepticismLevel":5,"focusAreas":["string"]}`,
         },
       ],
     })
 
-    // Extract the final text block (Claude responds after using web_search)
-    const textBlock = message.content.findLast(
-      (b): b is Anthropic.TextBlock => b.type === 'text'
-    )
-    if (!textBlock) throw new Error('No text response')
+    const textBlock = message.content[0] as Anthropic.TextBlock
+    if (!textBlock || textBlock.type !== 'text') throw new Error('No text response')
 
-    return JSON.parse(textBlock.text) as PersonaJSON
+    const cleaned = textBlock.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+    const persona = JSON.parse(cleaned) as PersonaJSON
+    if (imageUrl) persona.imageUrl = imageUrl
+    return persona
   } catch {
     // Best-effort fallback: return a generic persona based on the input string
     return {

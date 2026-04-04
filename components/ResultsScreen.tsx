@@ -38,6 +38,7 @@ interface VIPPersona {
   style: string
   skepticismLevel: number
   focusAreas: string[]
+  imageUrl?: string
 }
 
 interface VIPReaction {
@@ -47,6 +48,8 @@ interface VIPReaction {
   quote: string
   top_objection: string
   excitement_score: number
+  liked?: string
+  questions?: string[]
 }
 
 interface ExtrapolationResult {
@@ -400,6 +403,8 @@ export default function ResultsScreen({ results, onPitchAgain }: Props) {
                   amount={vip.amount}
                   quote={vip.quote}
                   topObjection={vip.top_objection}
+                  liked={vip.liked}
+                  questions={vip.questions}
                 />
               ))}
             </div>

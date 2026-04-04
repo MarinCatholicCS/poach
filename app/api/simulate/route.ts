@@ -15,6 +15,7 @@ interface VIPPersona {
   style: string
   skepticismLevel: number
   focusAreas: string[]
+  imageUrl?: string
 }
 
 interface VIPReaction {
@@ -24,6 +25,8 @@ interface VIPReaction {
   quote: string
   top_objection: string
   excitement_score: number
+  liked: string
+  questions: string[]
 }
 
 const client = new Anthropic()
@@ -36,12 +39,14 @@ async function simulateVIPReaction(persona: VIPPersona, transcript: string): Pro
     quote: 'Interesting concept, needs more validation.',
     top_objection: 'Need more data.',
     excitement_score: 5,
+    liked: '',
+    questions: [],
   }
 
   try {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
+      max_tokens: 700,
       system: `You are ${persona.name} at ${persona.firm}. Your investment thesis: ${persona.thesis}. Portfolio: ${persona.portfolio.join(', ')}. Style: ${persona.style}. Skepticism level: ${persona.skepticismLevel}/10. Evaluate this pitch and respond ONLY in JSON with no preamble and no markdown backticks.`,
       messages: [
         {
@@ -49,13 +54,14 @@ async function simulateVIPReaction(persona: VIPPersona, transcript: string): Pro
           content: `PITCH: ${transcript}
 
 Respond ONLY in JSON (no preamble, no markdown backticks):
-{"verdict":"invest|pass|maybe","amount":0,"quote":"your honest 1-sentence reaction as yourself","top_objection":"your main concern","excitement_score":5}`,
+{"verdict":"invest|pass|maybe","amount":0,"quote":"your honest 1-sentence gut reaction as yourself","top_objection":"your single biggest concern","liked":"1 sentence on what specifically resonated with your thesis","questions":["concise question (under 10 words) that can be answered in 30 seconds","second concise question (under 10 words)"],"excitement_score":5}`,
         },
       ],
     })
 
-    const text = (message.content[0] as { type: 'text'; text: string }).text
-    const parsed = JSON.parse(text)
+    const raw = (message.content[0] as { type: 'text'; text: string }).text
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+    const parsed = JSON.parse(cleaned)
     return { persona, ...parsed } as VIPReaction
   } catch {
     return fallback
