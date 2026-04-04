@@ -11,15 +11,30 @@ interface SetupConfig {
 
 interface Props {
   onStart: (config: SetupConfig) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onDevLoad?: (results: Record<string, any>) => void
 }
 
-export default function SetupScreen({ onStart }: Props) {
+export default function SetupScreen({ onStart, onDevLoad }: Props) {
   const [productMode, setProductMode] = useState<'own' | 'random'>('own')
   const [ownProduct, setOwnProduct] = useState('')
   const [randomProduct, setRandomProduct] = useState('')
   const [duration, setDuration] = useState<30 | 60>(60)
   const [vipInput, setVipInput] = useState('')
   const [vipInputs, setVipInputs] = useState<string[]>([])
+  const [devOpen, setDevOpen] = useState(false)
+  const [devJson, setDevJson] = useState('')
+  const [devError, setDevError] = useState('')
+
+  const handleDevLoad = () => {
+    try {
+      const parsed = JSON.parse(devJson.trim())
+      setDevError('')
+      onDevLoad?.(parsed)
+    } catch {
+      setDevError('Invalid JSON')
+    }
+  }
 
   const pickRandom = () => {
     const idx = Math.floor(Math.random() * RANDOM_PRODUCTS.length)
@@ -174,6 +189,35 @@ export default function SetupScreen({ onStart }: Props) {
         >
           Start Pitch →
         </button>
+
+        {/* Dev mode — paste raw JSON to skip API */}
+        <div className="border-t border-gray-900 pt-6">
+          <button
+            onClick={() => setDevOpen(v => !v)}
+            className="text-gray-700 hover:text-gray-500 text-xs transition-colors w-full text-left"
+          >
+            {devOpen ? '▾' : '▸'} Dev: load results from JSON
+          </button>
+          {devOpen && (
+            <div className="mt-3 space-y-2">
+              <textarea
+                value={devJson}
+                onChange={e => { setDevJson(e.target.value); setDevError('') }}
+                placeholder="Paste simulate API response JSON here..."
+                rows={6}
+                className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-gray-300 placeholder-gray-700 resize-none focus:outline-none focus:border-gray-600 text-xs font-mono"
+              />
+              {devError && <p className="text-red-500 text-xs">{devError}</p>}
+              <button
+                onClick={handleDevLoad}
+                disabled={!devJson.trim()}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs rounded-lg font-semibold transition-colors"
+              >
+                Load Results →
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

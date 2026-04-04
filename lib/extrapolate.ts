@@ -24,11 +24,11 @@ const CROWD_WEIGHT: Record<string, number> = {
   series_a_plus: 0.25,
 }
 
-// Median check size used for capital calculation
+// Per-individual check size in a crowded simulated room (not lead investment)
 const CHECK_AMOUNT: Record<string, number> = {
-  angel: 50_000,
-  seed: 500_000,
-  series_a_plus: 2_500_000,
+  angel: 5_000,
+  seed: 25_000,
+  series_a_plus: 100_000,
 }
 
 const CONSUMER_KEYWORDS = ['consumer', 'marketplace', 'retail', 'fashion', 'food', 'health', 'social', 'd2c', 'creator', 'gaming']

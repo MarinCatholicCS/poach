@@ -20,6 +20,7 @@ type SimulateResult = Record<string, any>
 export default function Home() {
   const [screen, setScreen] = useState<Screen>('setup')
   const [config, setConfig] = useState<Config | null>(null)
+  const [transcript, setTranscript] = useState<string>('')
   const [results, setResults] = useState<SimulateResult | null>(null)
 
   const handleStart = (cfg: Config) => {
@@ -27,45 +28,26 @@ export default function Home() {
     setScreen('pitch')
   }
 
-  const handlePitchComplete = async (transcript: string) => {
+  const handlePitchComplete = (t: string) => {
+    setTranscript(t)
     setScreen('simulation')
+  }
 
-    try {
-      // Research VIPs first if provided, then simulate
-      let vipPersonas: unknown[] = []
-      if (config?.vipInputs?.length) {
-        const res = await fetch('/api/research', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ inputs: config.vipInputs }),
-        })
-        if (res.ok) vipPersonas = await res.json()
-      }
-
-      const res = await fetch('/api/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript, vipPersonas }),
-      })
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? `HTTP ${res.status}`)
-      }
-      setResults(await res.json())
-      setScreen('results')
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.error('Simulation error:', msg)
-      setResults({ error: msg })
-      setScreen('results')
-    }
+  const handleSimulationComplete = (data: SimulateResult) => {
+    setResults(data)
+    setScreen('results')
   }
 
   const handleRestart = () => {
     setConfig(null)
+    setTranscript('')
     setResults(null)
     setScreen('setup')
+  }
+
+  const handleDevLoad = (data: SimulateResult) => {
+    setResults(data)
+    setScreen('results')
   }
 
   if (screen === 'pitch' && config) {
@@ -78,11 +60,19 @@ export default function Home() {
     )
   }
 
-  if (screen === 'simulation') return <SimulationScreen />
-
-  if (screen === 'results') {
-    return <ResultsScreen results={results} onRestart={handleRestart} />
+  if (screen === 'simulation' && config) {
+    return (
+      <SimulationScreen
+        transcript={transcript}
+        vipInputs={config.vipInputs}
+        onComplete={handleSimulationComplete}
+      />
+    )
   }
 
-  return <SetupScreen onStart={handleStart} />
+  if (screen === 'results') {
+    return <ResultsScreen results={results} onPitchAgain={handleRestart} />
+  }
+
+  return <SetupScreen onStart={handleStart} onDevLoad={handleDevLoad} />
 }

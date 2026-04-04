@@ -30,13 +30,17 @@ export async function generateCrowd(pitch: string): Promise<Archetype[]> {
 
 PITCH: ${pitch}
 
-Requirements:
-- Mix of checkSize: ~6 angels, ~5 seed, ~4 series_a_plus
-- Geographies: include SF, NYC, London, Singapore, Chicago, Austin — NOT all Silicon Valley
-- Styles: mix of data-driven, gut-feel, trend-chaser, contrarian, operator-minded
-- MUST include at least 2 archetypes with skepticismLevel of 9 or 10
-- Include angels, international VCs, operators-turned-investors — not just Bay Area VCs
-- Each has a distinct thesis and personality
+You MUST produce exactly this distribution — no exceptions:
+- 4 Tech VCs: checkSize seed or series_a_plus, geography SF or NYC or Chicago or Austin, focusAreas like "enterprise SaaS" / "developer tools" / "AI infrastructure" / "fintech"
+- 4 Consumer VCs: checkSize seed or series_a_plus, geography SF or NYC or LA or Boston, focusAreas like "consumer" / "marketplace" / "social" / "D2C" / "creator economy" / "gaming"
+- 4 Angels: checkSize angel, geography SF or NYC or Austin or Chicago (US cities only), operator-turned-investor background
+- 3 International: checkSize angel or seed, geography one of London / Berlin / Singapore / Tel Aviv / Toronto, focusAreas appropriate to their region
+
+Additional constraints:
+- Styles: mix of data-driven, gut-feel, trend-chaser, contrarian, operator-minded across all groups
+- Include at least 2 archetypes with skepticismLevel 9 or 10
+- Each has a distinct personality and thesis
+- Angels should have lower skepticismLevel (4–7) than institutional VCs
 
 Respond ONLY in JSON (no preamble, no markdown backticks):
 {"archetypes":[{"id":1,"name":"string","firm":"string","style":"data-driven|gut-feel|trend-chaser|contrarian|operator-minded","checkSize":"angel|seed|series_a_plus","skepticismLevel":1,"focusAreas":["string"],"geography":"string"}]}`
