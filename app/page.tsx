@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth'
 import { auth, savePitch } from '@/lib/firebase'
+import HeroScreen from '@/components/HeroScreen'
 import SetupScreen from '@/components/SetupScreen'
 import PitchScreen from '@/components/PitchScreen'
 import SimulationScreen from '@/components/SimulationScreen'
 import ResultsScreen from '@/components/ResultsScreen'
 import HistoryScreen from '@/components/HistoryScreen'
+import BubbleTransition from '@/components/BubbleTransition'
 
-type Screen = 'setup' | 'pitch' | 'simulation' | 'results' | 'history'
+type Screen = 'hero' | 'setup' | 'pitch' | 'simulation' | 'results' | 'history'
 
 interface Config {
   product: string
@@ -21,12 +23,14 @@ interface Config {
 type SimulateResult = Record<string, any>
 
 export default function Home() {
-  const [screen, setScreen] = useState<Screen>('setup')
+  const [screen, setScreen] = useState<Screen>('hero')
   const [config, setConfig] = useState<Config | null>(null)
   const [transcript, setTranscript] = useState<string>('')
   const [results, setResults] = useState<SimulateResult | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const configRef = useRef<Config | null>(null)
+  const [bubbleActive, setBubbleActive] = useState(false)
+  const pendingConfigRef = useRef<Config | null>(null)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, setUser)
@@ -36,6 +40,12 @@ export default function Home() {
   const handleStart = (cfg: Config) => {
     setConfig(cfg)
     configRef.current = cfg
+    pendingConfigRef.current = cfg
+    setBubbleActive(true)
+  }
+
+  const handleBubbleComplete = () => {
+    setBubbleActive(false)
     setScreen('pitch')
   }
 
@@ -91,6 +101,19 @@ export default function Home() {
     setScreen('results')
   }
 
+  if (bubbleActive && config) {
+    return (
+      <>
+        <PitchScreen
+          product={config.product}
+          duration={config.duration}
+          onComplete={handlePitchComplete}
+        />
+        <BubbleTransition isActive={bubbleActive} onComplete={handleBubbleComplete} />
+      </>
+    )
+  }
+
   if (screen === 'pitch' && config) {
     return (
       <PitchScreen
@@ -117,6 +140,10 @@ export default function Home() {
 
   if (screen === 'results') {
     return <ResultsScreen results={results} transcript={transcript} onPitchAgain={handleRestart} />
+  }
+
+  if (screen === 'hero') {
+    return <HeroScreen onStart={handleStart} />
   }
 
   return <SetupScreen onStart={handleStart} onDevLoad={handleDevLoad} user={user} onHistory={() => setScreen('history')} />
