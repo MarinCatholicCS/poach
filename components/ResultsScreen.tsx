@@ -7,6 +7,7 @@ import VerdictByTypeChart from './VerdictByTypeChart'
 import ObjectionBarChart from './ObjectionBarChart'
 import CoachingPanel from './CoachingPanel'
 import JudgeCard from './JudgeCard'
+import ResponsiveCritics, { CriticQuestion } from './ResponsiveCritics'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +29,7 @@ interface Reaction {
   quote: string
   top_objection: string
   excitement_score: number
+  question?: string
 }
 
 interface VIPPersona {
@@ -83,6 +85,7 @@ type ResultsJSON = Record<string, any>
 
 interface Props {
   results: ResultsJSON | null
+  transcript?: string
   onPitchAgain: () => void
 }
 
@@ -134,7 +137,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ResultsScreen({ results, onPitchAgain }: Props) {
+export default function ResultsScreen({ results, transcript = '', onPitchAgain }: Props) {
   if (!results) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -183,6 +186,25 @@ export default function ResultsScreen({ results, onPitchAgain }: Props) {
   const coaching = synthesis.coaching ?? {}
 
   const animatedCapital = useAnimatedCounter(capital)
+
+  // Build critic question pool: crowd questions + VIP questions
+  const criticQuestions: CriticQuestion[] = (() => {
+    const pool: CriticQuestion[] = []
+    // From crowd archetypes
+    reactions.forEach((r) => {
+      if (!r.question) return
+      const arch = archetypes.find((a) => a.id === r.archetypeId)
+      if (!arch) return
+      pool.push({ text: r.question, askedBy: arch.name, firm: arch.firm, isVIP: false })
+    })
+    // From VIP judges
+    vipReactions.forEach((vip) => {
+      if (!vip.questions || vip.questions.length === 0) return
+      // Take first question per VIP to keep variety
+      pool.push({ text: vip.questions[0], askedBy: vip.persona.name, firm: vip.persona.firm, isVIP: true })
+    })
+    return pool
+  })()
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -418,6 +440,16 @@ export default function ResultsScreen({ results, onPitchAgain }: Props) {
             </div>
           )}
         </div>
+
+        {/* ── SECTION C: RESPONSIVE CRITICS ── */}
+        {criticQuestions.length > 0 && (
+          <div>
+            <p className="text-zinc-500 text-xs font-semibold uppercase tracking-widest mb-3">
+              Responsive Critics
+            </p>
+            <ResponsiveCritics questions={criticQuestions} transcript={transcript} />
+          </div>
+        )}
 
         {/* ── RAW JSON (testing) ── */}
         <details className="text-xs">

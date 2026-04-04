@@ -116,7 +116,7 @@ export default function Home() {
   }
 
   if (screen === 'results') {
-    return <ResultsScreen results={results} onPitchAgain={handleRestart} />
+    return <ResultsScreen results={results} transcript={transcript} onPitchAgain={handleRestart} />
   }
 
   return <SetupScreen onStart={handleStart} onDevLoad={handleDevLoad} user={user} onHistory={() => setScreen('history')} />

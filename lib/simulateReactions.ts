@@ -15,6 +15,7 @@ export interface Reaction {
   quote: string
   top_objection: string
   excitement_score: number
+  question?: string
 }
 
 const CHECK_RANGE: Record<string, string> = {
@@ -44,7 +45,7 @@ async function simulateOne(archetype: Archetype, pitch: string): Promise<Reactio
           content: `PITCH: ${pitch}
 
 Respond ONLY in JSON (no preamble, no markdown backticks):
-{"verdict":"invest|pass|maybe","amount":0,"quote":"your honest 1-sentence reaction as yourself","top_objection":"your main concern","excitement_score":5}`
+{"verdict":"invest|pass|maybe","amount":0,"quote":"your honest 1-sentence reaction as yourself","top_objection":"your main concern","excitement_score":5,"question":"one sharp follow-up question you would ask the founder (under 12 words)"}`
         }
       ]
     })
@@ -58,6 +59,7 @@ Respond ONLY in JSON (no preamble, no markdown backticks):
       quote: parsed.quote,
       top_objection: parsed.top_objection,
       excitement_score: parsed.excitement_score,
+      question: parsed.question ?? undefined,
     } as Reaction
   } catch {
     return fallback
