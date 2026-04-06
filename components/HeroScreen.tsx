@@ -26,6 +26,7 @@ type Step = 'duration' | 'product' | 'vip'
 
 export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Props) {
   const containerRef = useRef<HTMLDivElement>(null!)
+  const bottomRef = useRef<HTMLDivElement>(null!)
 
   // Shared setup state — same shape as SetupScreen
   const [duration, setDuration] = useState<30 | 60>(60)
@@ -340,10 +341,22 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
 
       {/* Bottom orange rectangle */}
       <div
+        ref={bottomRef}
         className="w-full overflow-hidden flex items-center justify-center px-10"
         style={{ backgroundColor: '#FF8C00', marginTop: `${GAP}px`, height: '120px', flexShrink: 0 }}
       >
-        <p className="text-white font-black uppercase tracking-tight leading-none whitespace-nowrap" style={{ fontSize: '4.5vw' }}>Your personal startup coach</p>
+        <TextCursorProximity
+          label="Your personal startup coach"
+          className="text-white font-black uppercase tracking-tight leading-none whitespace-nowrap"
+          style={{ fontSize: '4.5vw' }}
+          styles={{
+            transform: { from: 'scale(1)', to: 'scale(1.3)' },
+            color: { from: '#ffffff', to: '#8B4000' },
+          }}
+          falloff="gaussian"
+          radius={120}
+          containerRef={bottomRef}
+        />
       </div>
 
       {/* Dev JSON loader — fixed bottom-left */}
