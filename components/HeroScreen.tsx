@@ -101,41 +101,6 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
       className="h-screen bg-white flex flex-col cursor-default select-none"
       style={{ padding: '100px 100px' }}
     >
-      {/* Auth bar */}
-      <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
-        {user ? (
-          <>
-            <button
-              onClick={onHistory}
-              className="text-xs text-gray-500 hover:text-gray-800 transition-colors border border-gray-200 hover:border-gray-400 px-3 py-1.5 rounded-lg"
-            >
-              History
-            </button>
-            {user.photoURL && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.photoURL}
-                alt={user.displayName ?? 'avatar'}
-                className="w-8 h-8 rounded-full border border-gray-300"
-              />
-            )}
-            <button
-              onClick={() => signOut()}
-              className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
-            >
-              Sign out
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => signInWithGoogle()}
-            className="text-xs border border-gray-300 hover:border-gray-500 text-gray-500 hover:text-gray-800 px-3 py-1.5 rounded-lg transition-all"
-          >
-            Sign in
-          </button>
-        )}
-      </div>
-
       {/* Top row */}
       <div className="flex w-full gap-4" style={{ flex: '1 1 auto', minHeight: 0 }}>
         {/* Left orange board — 65% */}
@@ -158,12 +123,22 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
             />
           </div>
 
-          <div className="absolute bottom-3 flex w-full justify-between px-6">
-            {ASCII.map((pencil, i) => (
-              <span key={i} className="text-2xl opacity-40 text-white" style={{ fontFamily: 'serif' }}>
-                {pencil}
-              </span>
-            ))}
+          <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
+            {user && (
+              <button
+                onClick={onHistory}
+                className="text-white text-xs uppercase tracking-widest font-black hover:opacity-70 transition-opacity active:scale-95"
+              >
+                History
+              </button>
+            )}
+            <div className="flex gap-3 ml-auto">
+              {ASCII.map((pencil, i) => (
+                <span key={i} className="text-2xl opacity-40 text-white" style={{ fontFamily: 'serif' }}>
+                  {pencil}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -172,6 +147,32 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
           className="relative overflow-hidden px-6"
           style={{ backgroundColor: '#FF8C00', flex: '1 1 auto' }}
         >
+          {/* Auth / history — top of panel */}
+          <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
+            {user ? (
+              <>
+                <span className="text-white text-xs uppercase tracking-widest font-black">
+                  Welcome {user.displayName?.split(' ')[0] ?? user.email}
+                </span>
+                <button
+                  onClick={() => signOut()}
+                  className="text-white text-xs uppercase tracking-widest font-black hover:opacity-70 transition-opacity active:scale-95"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <div className="ml-auto">
+                <button
+                  onClick={() => signInWithGoogle()}
+                  className="text-white text-xs uppercase tracking-widest font-black hover:opacity-70 transition-opacity active:scale-95"
+                >
+                  Sign in
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Top layer: label + buttons (fixed height, absolutely positioned) */}
           <div
             className="absolute left-6 right-6 max-w-xs mx-auto flex flex-col items-center gap-5"
@@ -191,7 +192,7 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
             {/* Step 1: Duration */}
             {step === 'duration' && (
               <>
-                <p className="text-white/60 text-xs uppercase tracking-widest font-semibold">
+                <p className="text-white text-xs uppercase tracking-widest font-black">
                   How long do you want to present?
                 </p>
                 <div className="grid grid-cols-2 gap-3 w-full">
@@ -211,7 +212,7 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
             {/* Step 2: Product — label + buttons only */}
             {step === 'product' && (
               <>
-                <p className="text-white/60 text-xs uppercase tracking-widest font-semibold">
+                <p className="text-white text-xs uppercase tracking-widest font-black">
                   What are you pitching?
                 </p>
                 <div className="grid grid-cols-2 gap-3 w-full">
@@ -242,7 +243,7 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
             {/* Step 3: VIP */}
             {step === 'vip' && (
               <>
-                <p className="text-white/60 text-xs uppercase tracking-widest font-semibold">
+                <p className="text-white text-xs uppercase tracking-widest font-black">
                   VIP Judges <span className="normal-case text-white/30 font-normal">(optional)</span>
                 </p>
                 <div className="flex gap-2 w-full">

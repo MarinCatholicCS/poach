@@ -2,6 +2,8 @@
 
 Run your startup pitch in front of 1,000 simulated investors. Get structured coaching in seconds.
 
+
+
 ## What it does
 
 POACH runs 15 parallel Claude agents (investor archetypes) to react to your spoken pitch, extrapolates to 1,000 simulated investors, and returns structured coaching feedback — capital committed, verdict breakdown, top objections, and a Poach Rating.

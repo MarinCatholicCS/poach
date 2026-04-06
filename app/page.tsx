@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth'
-import { auth, savePitch } from '@/lib/firebase'
+import { auth, savePitch, getPitches, SavedPitch } from '@/lib/firebase'
 import HeroScreen from '@/components/HeroScreen'
 import PitchScreen from '@/components/PitchScreen'
 import SimulationScreen from '@/components/SimulationScreen'
@@ -26,11 +26,18 @@ export default function Home() {
   const [transcript, setTranscript] = useState<string>('')
   const [results, setResults] = useState<SimulateResult | null>(null)
   const [user, setUser] = useState<User | null>(null)
+  const [pitches, setPitches] = useState<SavedPitch[]>([])
   const configRef = useRef<Config | null>(null)
-  const historyReturnTo = useRef<Screen>('hero')
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, setUser)
+    const unsub = onAuthStateChanged(auth, u => {
+      setUser(u)
+      if (u) {
+        getPitches(u.uid).then(setPitches).catch(console.error)
+      } else {
+        setPitches([])
+      }
+    })
     return unsub
   }, [])
 
@@ -58,6 +65,7 @@ export default function Home() {
       const totalPass = distribution.totalPass ?? 0
       const total = totalInvest + totalPass || 1000
 
+      const typeBreakdown = distribution.investorTypeBreakdown ?? {}
       savePitch(user.uid, {
         product: cfg.product,
         transcript,
@@ -73,7 +81,18 @@ export default function Home() {
           cut: coaching.cut ?? '',
           reframe: coaching.reframe ?? '',
         },
-      }).catch(console.error)
+        objectionClusters: synthesis.objectionClusters ?? [],
+        investorTypeBreakdown: {
+          techVCs: typeBreakdown.techVCs ?? 0,
+          consumerVCs: typeBreakdown.consumerVCs ?? 0,
+          angels: typeBreakdown.angels ?? 0,
+          international: typeBreakdown.international ?? 0,
+        },
+        bestCrowdQuote: synthesis.bestCrowdQuote ?? distribution.bestQuote ?? '',
+      }).then(() => {
+        // Refresh pitches after saving so history is up to date
+        return getPitches(user.uid)
+      }).then(setPitches).catch(console.error)
     }
   }
 
@@ -111,20 +130,50 @@ export default function Home() {
     )
   }
 
-  if (screen === 'history' && user) {
-    return <HistoryScreen user={user} onBack={() => setScreen(historyReturnTo.current)} />
-  }
-
   if (screen === 'results') {
     return <ResultsScreen results={results} transcript={transcript} product={config?.product ?? ''} onPitchAgain={handleRestart} />
   }
 
+  // Hero + History share a sliding container
+  const showHistory = screen === 'history'
+  const SLIDE = 'transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)'
+
   return (
-    <HeroScreen
-      onStart={handleStart}
-      user={user}
-      onHistory={() => { historyReturnTo.current = 'hero'; setScreen('history') }}
-      onDevLoad={handleDevLoad}
-    />
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {/* Hero — slides out right */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        transform: showHistory ? 'translateX(100%)' : 'translateX(0)',
+        transition: SLIDE,
+        overflow: 'auto',
+      }}>
+        <HeroScreen
+          onStart={handleStart}
+          user={user}
+          onHistory={() => setScreen('history')}
+          onDevLoad={handleDevLoad}
+        />
+      </div>
+
+      {/* History — slides in from left */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        transform: showHistory ? 'translateX(0)' : 'translateX(-100%)',
+        transition: SLIDE,
+        overflow: 'auto',
+      }}>
+        {user ? (
+          <HistoryScreen
+            user={user}
+            pitches={pitches}
+            onBack={() => setScreen('hero')}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center bg-white">
+            <p className="text-gray-400 text-sm uppercase tracking-widest font-semibold">Sign in to view history</p>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

@@ -43,7 +43,11 @@ export interface PitchData {
   poachRating: number
   capitalCommitted: number
   verdictSplit: { invest: number; pass: number }
-  coaching: { landed: string; cut: string; reframe: string }
+  coaching: { landed: string | string[]; cut: string | string[]; reframe: string }
+  // Extended fields — may be absent in older saved pitches
+  objectionClusters?: { theme: string; count: number }[]
+  investorTypeBreakdown?: { techVCs: number; consumerVCs: number; angels: number; international: number }
+  bestCrowdQuote?: string
 }
 
 export async function savePitch(uid: string, pitchData: PitchData) {
