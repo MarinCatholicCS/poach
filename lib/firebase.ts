@@ -10,6 +10,8 @@ import {
   collection,
   addDoc,
   getDocs,
+  deleteDoc,
+  doc,
   query,
   orderBy,
   serverTimestamp,
@@ -58,6 +60,11 @@ export async function savePitch(uid: string, pitchData: PitchData) {
 export interface SavedPitch extends PitchData {
   id: string
   createdAt: { seconds: number; nanoseconds: number } | null
+}
+
+export async function deletePitch(uid: string, pitchId: string): Promise<void> {
+  const ref = doc(db, 'users', uid, 'pitches', pitchId)
+  return deleteDoc(ref)
 }
 
 export async function getPitches(uid: string): Promise<SavedPitch[]> {

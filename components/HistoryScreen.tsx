@@ -9,6 +9,7 @@ interface Props {
   user: User
   pitches: SavedPitch[]
   onBack: () => void
+  onDelete?: (pitchId: string) => void
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -40,11 +41,13 @@ function PitchSection({
   delta,
   open,
   onToggle,
+  onDelete,
 }: {
   pitch: SavedPitch
   delta: number | null
   open: boolean
   onToggle: () => void
+  onDelete?: () => void
 }) {
   const objClusters = pitch.objectionClusters ?? []
   const maxCount = objClusters.reduce((m, c) => Math.max(m, c.count), 0)
@@ -217,6 +220,18 @@ function PitchSection({
             />
           )}
 
+          {/* Delete */}
+          {onDelete && (
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={onDelete}
+                className="text-white/40 hover:text-white text-xs uppercase tracking-widest font-semibold transition-colors"
+              >
+                Delete pitch
+              </button>
+            </div>
+          )}
+
         </div>
       )}
     </div>
@@ -225,7 +240,7 @@ function PitchSection({
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export default function HistoryScreen({ user, pitches, onBack }: Props) {
+export default function HistoryScreen({ user, pitches, onBack, onDelete }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   // Delta: per-product improvement vs previous pitch of that product
@@ -342,6 +357,7 @@ export default function HistoryScreen({ user, pitches, onBack }: Props) {
                 delta={delta}
                 open={expanded === pitch.id}
                 onToggle={() => setExpanded(expanded === pitch.id ? null : pitch.id)}
+                onDelete={onDelete ? () => onDelete(pitch.id) : undefined}
               />
             )
           })

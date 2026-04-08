@@ -81,12 +81,17 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
     called.current = true
 
     async function run() {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30_000)
+
       try {
         const res = await fetch('/api/simulate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcript, vipInputs }),
+          signal: controller.signal,
         })
+        clearTimeout(timeoutId)
 
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
@@ -97,7 +102,10 @@ export default function SimulationScreen({ transcript, vipInputs, onComplete }: 
         setAllDone(true)
         setTimeout(() => onComplete(data), 600)
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
+        clearTimeout(timeoutId)
+        const msg = err instanceof Error
+          ? (err.name === 'AbortError' ? 'Request timed out after 30s — please retry.' : err.message)
+          : String(err)
         setError(msg)
       }
     }

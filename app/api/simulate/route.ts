@@ -22,6 +22,19 @@ interface VIPReaction {
   questions: string[]
 }
 
+// --- rate limiter ---
+const WINDOW_MS = 60 * 60 * 1000 // 1 hour
+const MAX_REQUESTS = 10
+const ipLog = new Map<string, number[]>()
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const timestamps = (ipLog.get(ip) ?? []).filter(t => now - t < WINDOW_MS)
+  if (timestamps.length >= MAX_REQUESTS) return true
+  ipLog.set(ip, [...timestamps, now])
+  return false
+}
+
 const client = new Anthropic()
 
 async function simulateVIPReaction(persona: VIPPersona, transcript: string): Promise<VIPReaction> {
@@ -62,6 +75,11 @@ Respond ONLY in JSON (no preamble, no markdown backticks):
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (isRateLimited(ip)) {
+    return Response.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+  }
+
   try {
     const body = await req.json()
     const { transcript, vipInputs } = body as {

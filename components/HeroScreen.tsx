@@ -161,16 +161,7 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
                   Sign out
                 </button>
               </>
-            ) : (
-              <div className="ml-auto">
-                <button
-                  onClick={() => signInWithGoogle()}
-                  className="text-white text-xs uppercase tracking-widest font-black hover:opacity-70 transition-opacity active:scale-95"
-                >
-                  Sign in
-                </button>
-              </div>
-            )}
+            ) : null}
           </div>
 
           {/* Top layer: label + buttons (fixed height, absolutely positioned) */}
@@ -191,22 +182,36 @@ export default function HeroScreen({ onStart, user, onHistory, onDevLoad }: Prop
           >
             {/* Step 1: Duration */}
             {step === 'duration' && (
-              <>
-                <p className="text-white text-xs uppercase tracking-widest font-black">
-                  How long do you want to present?
-                </p>
-                <div className="grid grid-cols-2 gap-3 w-full">
-                  {([30, 60] as const).map(d => (
-                    <button
-                      key={d}
-                      onClick={() => handleDurationPick(d)}
-                      className="py-5 rounded-xl border-2 text-xl font-black tracking-tight transition-all border-white/30 text-white hover:bg-white hover:text-orange-600 active:scale-95"
-                    >
-                      {d}s
-                    </button>
-                  ))}
-                </div>
-              </>
+              !user ? (
+                <>
+                  <p className="text-white text-xs uppercase tracking-widest font-black text-center">
+                    Sign in to start pitching
+                  </p>
+                  <button
+                    onClick={() => signInWithGoogle()}
+                    className="w-full py-5 rounded-xl border-2 border-white/30 text-white font-black text-sm hover:bg-white hover:text-orange-600 active:scale-95 transition-all"
+                  >
+                    Sign in with Google
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-white text-xs uppercase tracking-widest font-black">
+                    How long do you want to present?
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 w-full">
+                    {([30, 60] as const).map(d => (
+                      <button
+                        key={d}
+                        onClick={() => handleDurationPick(d)}
+                        className="py-5 rounded-xl border-2 text-xl font-black tracking-tight transition-all border-white/30 text-white hover:bg-white hover:text-orange-600 active:scale-95"
+                      >
+                        {d}s
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )
             )}
 
             {/* Step 2: Product — label + buttons only */}

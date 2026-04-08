@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth'
-import { auth, savePitch, getPitches, SavedPitch } from '@/lib/firebase'
+import { auth, savePitch, getPitches, deletePitch, SavedPitch } from '@/lib/firebase'
 import HeroScreen from '@/components/HeroScreen'
 import PitchScreen from '@/components/PitchScreen'
 import SimulationScreen from '@/components/SimulationScreen'
@@ -27,15 +27,17 @@ export default function Home() {
   const [results, setResults] = useState<SimulateResult | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [pitches, setPitches] = useState<SavedPitch[]>([])
+  const [historyError, setHistoryError] = useState(false)
   const configRef = useRef<Config | null>(null)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, u => {
       setUser(u)
       if (u) {
-        getPitches(u.uid).then(setPitches).catch(console.error)
+        getPitches(u.uid).then(setPitches).catch(() => setHistoryError(true))
       } else {
         setPitches([])
+        setHistoryError(false)
       }
     })
     return unsub
@@ -104,6 +106,12 @@ export default function Home() {
     setScreen('hero')
   }
 
+  const handleDelete = async (pitchId: string) => {
+    if (!user) return
+    await deletePitch(user.uid, pitchId)
+    setPitches(prev => prev.filter(p => p.id !== pitchId))
+  }
+
   const handleDevLoad = (data: SimulateResult) => {
     setResults(data)
     setScreen('results')
@@ -155,6 +163,14 @@ export default function Home() {
         />
       </div>
 
+      {/* History load error toast */}
+      {historyError && (
+        <div className="fixed bottom-4 right-4 z-50 bg-red-600 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-3">
+          <span>Failed to load pitch history</span>
+          <button onClick={() => setHistoryError(false)} className="opacity-70 hover:opacity-100 text-base leading-none">×</button>
+        </div>
+      )}
+
       {/* History — slides in from left */}
       <div style={{
         position: 'absolute', inset: 0,
@@ -167,6 +183,7 @@ export default function Home() {
             user={user}
             pitches={pitches}
             onBack={() => setScreen('hero')}
+            onDelete={handleDelete}
           />
         ) : (
           <div className="h-full flex items-center justify-center bg-white">

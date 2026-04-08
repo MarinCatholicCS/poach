@@ -1,6 +1,19 @@
 import { NextRequest } from 'next/server'
 import { researchVIPs, type PersonaJSON } from '@/lib/researchVIPs'
 
+// --- rate limiter ---
+const WINDOW_MS = 60 * 60 * 1000 // 1 hour
+const MAX_REQUESTS = 20
+const ipLog = new Map<string, number[]>()
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const timestamps = (ipLog.get(ip) ?? []).filter(t => now - t < WINDOW_MS)
+  if (timestamps.length >= MAX_REQUESTS) return true
+  ipLog.set(ip, [...timestamps, now])
+  return false
+}
+
 const FALLBACK_PERSONAS: PersonaJSON[] = [
   {
     name: 'Sam Altman',
@@ -41,6 +54,11 @@ const FALLBACK_PERSONAS: PersonaJSON[] = [
 ]
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (isRateLimited(ip)) {
+    return Response.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+  }
+
   try {
     const body = await req.json()
     const { inputs } = body as { inputs?: string[] }
